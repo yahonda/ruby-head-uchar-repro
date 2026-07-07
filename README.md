@@ -54,23 +54,35 @@ ruby master changes:
 ## Reproduce without Docker
 
 Docker is only used here to pin a ruby master snapshot that still contains the
-change; the failure itself is not tied to Docker or to a particular OS. It
-reproduces on any system once the relevant package versions line up, namely a
-ruby master build that includes `b58a6024a0` together with ICU development
-headers:
+change and to build from a clean tree every time. The failure itself is not tied
+to Docker, to a particular OS, or to a particular ICU version.
+
+Two things must hold, and both are easy to miss:
+
+1. **`ruby` must be a ruby master (ruby-head) build that includes `b58a6024a0`.**
+   A released ruby (for example 4.0.x) still has the old forward declaration in
+   `rregexp.h` and does not include `onigmo.h`, so it compiles cleanly and does
+   not reproduce. Point `ruby` at your ruby-head build explicitly if your default
+   `ruby` is a release.
+
+2. **Build from a clean state.** `make` will not recompile `repro.c` if an
+   object file from an earlier successful build is still present — it just
+   relinks and prints `linking shared-object repro.so` with no error. Run
+   `make clean` (or use a fresh checkout) first.
 
 ```
 sudo apt-get install -y gcc make libicu-dev
-ruby extconf.rb && make
+make clean 2>/dev/null; ruby extconf.rb && make   # `ruby` = a ruby-head build
 ```
 
-The same compile error appears. These are the versions this was verified with
-(the set the `Dockerfile` pins):
+When it recompiles you see `compiling repro.c` followed by the error. Verified on
+two unrelated environments — the collision is the same, only ICU's C `UChar` type
+differs:
 
-- Ubuntu 24.04
-- `ruby 4.1.0dev (2026-07-06T16:40:46Z master 53443163ec)`
-- gcc 13.3.0
-- ICU 74.2 (`libicu-dev` 74.2-1ubuntu3.1)
+- Ubuntu 24.04, gcc 13.3.0, ICU 74.2, `ruby 4.1.0dev (…53443163ec)`
+  → `conflicting types for 'OnigUChar'; have 'uint16_t'`
+- Ubuntu 26.04, gcc 15.2.0 (C23), ICU 78.2, `ruby 4.1.0dev (…9bda75a612)`
+  → `conflicting types for 'OnigUChar'; have 'char16_t' {aka 'short unsigned int'}`
 
 ## Workaround
 
