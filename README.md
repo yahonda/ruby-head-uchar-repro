@@ -72,8 +72,12 @@ Two things must hold, and both are easy to miss:
 
 ```
 sudo apt-get install -y gcc make libicu-dev
-make clean 2>/dev/null; ruby extconf.rb && make   # `ruby` = a ruby-head build
+ruby extconf.rb && make clean && make   # `ruby` = a ruby-head build
 ```
+
+`make clean` runs after `extconf.rb` (which regenerates the `Makefile`) so it
+removes any object file from an earlier successful build; without it `make` would
+relink a stale `repro.o` and print `linking shared-object repro.so` with no error.
 
 When it recompiles you see `compiling repro.c` followed by the error. Verified on
 two unrelated environments — the collision is the same, only ICU's C `UChar` type
