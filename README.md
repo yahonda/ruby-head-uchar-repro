@@ -1,5 +1,13 @@
 # ruby-head UChar / OnigUChar collision reproduction
 
+> **Key commit (root cause):** ruby/ruby
+> [`b58a6024a07ab0bf7f45d1a17fe216822125444a`](https://github.com/ruby/ruby/commit/b58a6024a07ab0bf7f45d1a17fe216822125444a)
+> — "Make T_REGEXP embedded" ([ruby/ruby#17671](https://github.com/ruby/ruby/pull/17671)).
+> A second commit sets the boundary on the libxml2 side: libxml2
+> [`b66ce0bba83febe2f4d119097a0391f5d886c3b4`](https://github.com/GNOME/libxml2/commit/b66ce0bba83febe2f4d119097a0391f5d886c3b4)
+> ("Don't include ICU headers in public headers", released in 2.10.0) is why only
+> libxml2 < 2.10.0 pulls ICU into the compile.
+
 Since ["Make T_REGEXP embedded"](https://github.com/ruby/ruby/pull/17671)
 ([`b58a6024a0`](https://github.com/ruby/ruby/commit/b58a6024a07ab0bf7f45d1a17fe216822125444a)),
 `include/ruby/internal/core/rregexp.h` includes `ruby/onigmo.h` to get the
