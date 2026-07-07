@@ -98,9 +98,39 @@ differs:
 
 ## Workaround
 
-Compiling with `-DONIG_ESCAPE_UCHAR_COLLISION` stops onigmo.h from defining the
-`UChar` macro and lets the file compile. Existing gems cannot be expected to add
-that define, though.
+`ONIG_ESCAPE_UCHAR_COLLISION` is an escape hatch that onigmo.h itself provides for
+exactly this situation:
+
+```c
+#ifndef ONIG_ESCAPE_UCHAR_COLLISION
+# define UChar OnigUChar
+#endif
+
+typedef unsigned char  OnigUChar;
+```
+
+By default onigmo.h defines `UChar` as a macro for `OnigUChar` — a backward-compat
+alias left over from Oniguruma, whose internal type was named `UChar` before the
+public type was renamed to `OnigUChar`. With that macro active, ICU's later
+`typedef uint16_t UChar;` expands to `typedef uint16_t OnigUChar;`, which
+redeclares `OnigUChar` with a different type and fails to compile.
+
+Defining `-DONIG_ESCAPE_UCHAR_COLLISION` skips the `#define UChar OnigUChar` line,
+so `UChar` stays an ordinary identifier and ICU keeps it as its own type. The two
+types (`OnigUChar` = `unsigned char`, ICU's `UChar` = `uint16_t`/`char16_t`) then
+coexist as distinct names, so there is no redeclaration. It does not change any
+type — it just stops onigmo from claiming the `UChar` name via a macro.
+
+This is safe for code that does not use the Onigmo API (such as libxml-ruby): only
+code that writes a bare `UChar` expecting the Onigmo type relies on that alias.
+Existing gems cannot be expected to add the define themselves, though. In the real
+world it is applied through the build flags, e.g. for libxml-ruby:
+
+```
+gem install libxml-ruby -- --with-cflags=-DONIG_ESCAPE_UCHAR_COLLISION
+# or, with bundler / in CI:
+bundle config set build.libxml-ruby --with-cflags=-DONIG_ESCAPE_UCHAR_COLLISION
+```
 
 ## Notes
 
