@@ -51,6 +51,27 @@ ruby master changes:
 - `ruby 4.1.0dev (2026-07-06T16:40:46Z master 53443163ec)`
 - gcc 13.3.0, ICU 74.2, Ubuntu 24.04
 
+## Reproduce without Docker
+
+Docker is only used here to pin a ruby master snapshot that still contains the
+change; the failure itself is not tied to Docker or to a particular OS. It
+reproduces on any system once the relevant package versions line up, namely a
+ruby master build that includes `b58a6024a0` together with ICU development
+headers:
+
+```
+apt-get install -y gcc make libicu-dev
+ruby extconf.rb && make
+```
+
+The same compile error appears. These are the versions this was verified with
+(the set the `Dockerfile` pins):
+
+- Ubuntu 24.04
+- `ruby 4.1.0dev (2026-07-06T16:40:46Z master 53443163ec)`
+- gcc 13.3.0
+- ICU 74.2 (`libicu-dev` 74.2-1ubuntu3.1)
+
 ## Workaround
 
 Compiling with `-DONIG_ESCAPE_UCHAR_COLLISION` stops onigmo.h from defining the
