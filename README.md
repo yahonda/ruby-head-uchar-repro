@@ -96,10 +96,12 @@ that define, though.
 
 ## Notes
 
-- libxml2 >= 2.12 no longer includes ICU headers from its public headers, so the
-  original libxml-ruby failure only occurs on distributions shipping older
-  libxml2 (such as Ubuntu 24.04). The reproduction here does not involve libxml2
-  and fails on any system with ICU headers installed.
+- libxml2 stopped including ICU headers from its public headers in 2.10.0
+  ([`b66ce0bb`](https://github.com/GNOME/libxml2/commit/b66ce0bba83febe2f4d119097a0391f5d886c3b4),
+  "Don't include ICU headers in public headers"), so the original libxml-ruby
+  failure only occurs on distributions shipping libxml2 < 2.10.0 (such as Ubuntu
+  24.04, which has 2.9.14). The reproduction here does not involve libxml2 and
+  fails on any system with ICU headers installed.
 - Real-world impact: `gem install libxml-ruby` fails on ruby-head, blocking the
   Rails ruby-head CI —
   [rails-nightly build 4522](https://buildkite.com/rails/rails-nightly/builds/4522#019f393b-4212-453f-8f4f-c1a538af23e5).
