@@ -60,7 +60,7 @@ ruby master build that includes `b58a6024a0` together with ICU development
 headers:
 
 ```
-apt-get install -y gcc make libicu-dev
+sudo apt-get install -y gcc make libicu-dev
 ruby extconf.rb && make
 ```
 
